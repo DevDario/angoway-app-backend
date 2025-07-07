@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as luandaStopsJson from '../data/luanda-stops.json';
+import { ROLES } from 'src/enums/roles-enum';
 
 const prisma = new PrismaClient();
 
@@ -24,28 +25,28 @@ async function createSampleData() {
           email: 'dario@gmail.com',
           number: '945193073',
           password: hashedPassword,
-          role: 'USER',
+          role: ROLES.USER,
         },
         {
           name: 'Pedro',
           email: 'pedro@gmail.com',
           number: '934945740',
           password: hashedPassword,
-          role: 'USER',
+          role: ROLES.USER,
         },
         {
           name: 'Rebeca',
           email: 'rebeca@gmail.com',
           number: '912345678',
           password: hashedPassword,
-          role: 'USER',
+          role: ROLES.USER,
         },
         {
           name: 'Fernando',
           email: 'fernando@gmail.com',
           number: '923456789',
           password: hashedPassword,
-          role: 'ADMIN',
+          role: ROLES.ADMIN,
         },
       ],
     });
