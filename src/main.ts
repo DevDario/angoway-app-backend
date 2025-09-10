@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { patchNestjsSwagger } from '@anatine/zod-nestjs';
 import { ValidationPipe } from '@nestjs/common';
+import { ensureSampleData } from './seeder/registry-sample-data';
 
 
 async function bootstrap() {
@@ -27,6 +28,13 @@ async function bootstrap() {
 
     app.enableCors({ origin:"*" })
     const port = process.env.PORT || 3000;
+    // Ensure sample data exists before starting the server (idempotent)
+    try {
+        await ensureSampleData();
+    } catch (err) {
+        console.error('Seeder failed; continuing startup (check logs)');
+    }
+
     await app.listen(port);
     console.log(`Application is running on: ${await app.getUrl()}`);
     console.log(`Swagger is running on: ${await app.getUrl()}/api-doc`);
