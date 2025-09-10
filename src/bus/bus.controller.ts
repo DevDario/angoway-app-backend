@@ -14,7 +14,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { BusService } from './bus.service';
-import { Bus, Prisma } from '@prisma/client';
+// avoid importing Prisma types directly here to prevent type mismatch with generated client
+import type { /* Bus */ } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { busDetails } from 'src/types/bus.details';
 import { updateBusDetails } from 'src/types/update-bus-details';
@@ -27,7 +28,7 @@ export class BusController {
 
   @Post('')
   async createBus(
-    @Body() busData: Prisma.BusCreateInput,
+    @Body() busData: any,
   ): Promise<ResponseBody> {
     await this.busService.createBus(busData);
     return {
@@ -36,11 +37,11 @@ export class BusController {
     };
   }
   @Get('')
-  async buses(): Promise<Bus[]> {
+  async buses(): Promise<any[]> {
     return this.busService.buses();
   }
   @Get('with-route')
-  async busesWithRoute(): Promise<Bus[]> {
+  async busesWithRoute(): Promise<any[]> {
     return this.busService.busesWithRoute();
   }
 
@@ -138,7 +139,7 @@ export class BusController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async changeBusStatus(
     @Param('driverId') driverId: string,
-    @Body() body: Prisma.BusUpdateInput,
+    @Body() body: any,
   ): Promise<ResponseBody> {
     const response = await this.busService.changeStatus(Number(driverId), body);
 
@@ -188,7 +189,7 @@ export class BusController {
 
   @Get('pending')
   @UseGuards(AuthGuard)
-  async pendingBuses(): Promise<{ count: number; buses: Bus[] }> {
+  async pendingBuses(): Promise<{ count: number; buses: any[] }> {
     return await this.busService.pendingBuses();
   }
 
@@ -197,7 +198,7 @@ export class BusController {
   @UseGuards(AuthGuard)
   async updateBus(
     @Param('busId') busId: string,
-    @Body() data: Prisma.BusUpdateInput,
+    @Body() data: any,
   ): Promise<ResponseBody> {
     const numericId = parseInt(busId, 10);
     if (isNaN(numericId)) {
@@ -221,12 +222,12 @@ export class BusController {
 
   @Get('count-inactive')
   @UseGuards(AuthGuard)
-  async countInactiveBuses(): Promise<{ count: number; buses: Bus[] }> {
+  async countInactiveBuses(): Promise<{ count: number; buses: any[] }> {
     return await this.busService.countInactiveBuses();
   }
   @Get('count-active')
   @UseGuards(AuthGuard)
-  async countAvailableBuses(): Promise<{ count: number; buses: Bus[] }> {
+  async countAvailableBuses(): Promise<{ count: number; buses: any[] }> {
     return await this.busService.countAvailableBuses();
   }
 }
