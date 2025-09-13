@@ -32,8 +32,9 @@ export class BusService {
     });
     let number = 1;
     if (lastBus?.nia) {
-      const match = lastBus.nia.match(/BUS-(\d+)/);
-      if (match) number = parseInt(match[1]) + 1;
+  // aceita formatos como "BUS001", "BUS-001", "BUS-1" etc.
+  const match = lastBus.nia.match(/(\d+)$/);
+  if (match) number = parseInt(match[1], 10) + 1;
     }
     return `BUS-${String(number).padStart(4, '0')}`;
   }
@@ -195,7 +196,7 @@ export class BusService {
     });
   }
 
-  async updateBus(id: number, data: Prisma.BusUpdateInput): Promise<Bus> {
+  async updateBus(id: number, data: any): Promise<Bus> {
     return this.prisma.bus.update({ where: { id }, data });
   }
   async deleteBus(id: number): Promise<Bus> {
@@ -285,8 +286,9 @@ export class BusService {
       const currentProfit = Number(travel.profit);
       const loadTimesPrice = Number(data.currentLoad) * this.BUS_RIDE_PRICE;
 
-      this.prisma.travel.update({
-        where: { id },
+      // update the travel profit - use travel.id (not bus id) and await the result
+      await this.prisma.travel.update({
+        where: { id: travel.id },
         data: {
           profit: currentProfit + loadTimesPrice,
         },
@@ -332,7 +334,7 @@ export class BusService {
 
   async changeStatus(
     driverId: number,
-    data: Prisma.BusUpdateInput,
+    data: any,
   ): Promise<ResponseBody | Bus> {
     const bus = await this.prisma.bus.findFirst({ where: { driverId } });
 
@@ -384,6 +386,17 @@ export class BusService {
         code: HttpStatus.NOT_FOUND,
         message: 'Autocarro não encontrado',
       };
+    }
+
+    // if the driver is already assigned to another bus, unassign first
+    const existingAssignment = await this.prisma.bus.findFirst({
+      where: { driverId: driver.id },
+    });
+    if (existingAssignment && existingAssignment.id !== busId) {
+      await this.prisma.bus.update({
+        where: { id: existingAssignment.id },
+        data: { driverId: null },
+      });
     }
 
     return this.prisma.bus.update({

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: angoway-app-backend
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    buildCommand: "npm ci && npx prisma generate && npm run build"
+    startCommand: "node dist/src/main.js"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET
+        sync: false
+    mounts: []
+    disk: 1024
+    instances: 1
+    region: oregon

@@ -42,8 +42,8 @@
     
     RUN npm ci --only=production
     
-    # Expõe a porta da API
-    EXPOSE 3300
+    # Expõe a porta da API (o app escuta em process.env.PORT || 3000)
+    EXPOSE 3000
     
     CMD ["node", "dist/src/main.js"]
     

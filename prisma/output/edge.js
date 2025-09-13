@@ -83,6 +83,9 @@ Prisma.NullTypes = {
  * Enums
  */
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 });
 
@@ -209,6 +212,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
@@ -238,7 +246,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Laurentino\\3D Objects\\angoway-app-backend\\prisma\\output",
+      "value": "/workspaces/angoway-app-backend/prisma/output",
       "fromEnvVar": null
     },
     "config": {
@@ -247,12 +255,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-1.1.x",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Laurentino\\3D Objects\\angoway-app-backend\\prisma\\schema.prisma",
+    "sourceFilePath": "/workspaces/angoway-app-backend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -265,17 +273,17 @@ const config = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "sqlite",
+  "activeProvider": "postgresql",
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "file:./angoway.db"
+        "value": "postgresql://neondb_owner:npg_1ISLjBncOGV7@ep-polished-grass-ad00xzlh-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"./output\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                 Int            @id @default(autoincrement())\n  name               String\n  email              String         @unique\n  number             String         @unique\n  password           String\n  disability         String?\n  url_foto_de_perfil String?\n  role               String         @default(\"USER\")\n  createdAt          DateTime       @default(now())\n  updatedAt          DateTime       @updatedAt\n  feedbacks          Feedback[]\n  notifications      Notification[]\n}\n\nmodel Driver {\n  id                 Int            @id @default(autoincrement())\n  name               String\n  email              String         @unique\n  phone              String         @unique\n  password           String\n  licenseNumber      String         @unique\n  url_foto_de_perfil String?\n  experienceTime     Int\n  effectiveDate      DateTime?\n  status             String         @default(\"AVAILABLE\") // AVAILABLE, ON_ROUTE OFFLINE\n  currentLatitude    Float?\n  currentLongitude   Float?\n  lastLogin          DateTime?\n  deviceToken        String?\n  isVerified         Boolean        @default(false)\n  rating             Float          @default(0)\n  assignedBus        Bus?           @relation(\"DriverBus\")\n  travels            Travel[]\n  feedbacks          Feedback[]\n  notifications      Notification[]\n  createdAt          DateTime       @default(now())\n  updatedAt          DateTime       @updatedAt\n}\n\nmodel Bus {\n  id          Int      @id @default(autoincrement())\n  matricula   String   @unique\n  nia         String   @unique\n  driverId    Int?     @unique\n  routeId     Int\n  status      String   @default(\"IN_TRANSIT\")\n  capacity    Int\n  currentLoad Int\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  driver Driver? @relation(\"DriverBus\", fields: [driverId], references: [id])\n  route  Route   @relation(fields: [routeId], references: [id])\n\n  travels   Travel[]\n  feedbacks Feedback[]\n}\n\nmodel Travel {\n  id            Int       @id @default(autoincrement())\n  routeId       Int\n  driverId      Int\n  busId         Int\n  profit        Int\n  arrivalTime   DateTime?\n  departureTime DateTime?\n\n  route     Route    @relation(fields: [routeId], references: [id])\n  driver    Driver   @relation(fields: [driverId], references: [id])\n  bus       Bus      @relation(fields: [busId], references: [id])\n  createdAt DateTime @default(now())\n}\n\nmodel Route {\n  id                   Int    @id @default(autoincrement())\n  name                 String\n  origin               String\n  originLatitude       Float?\n  originLongitude      Float?\n  destination          String\n  destinationLatitude  Float?\n  destinationLongitude Float?\n  status               String @default(\"active\")\n\n  buses      Bus[]\n  routeStops RouteStop[]\n  travels    Travel[]\n\n  schedules RouteSchedule[] @relation(\"RouteSchedule\")\n}\n\nmodel RouteSchedule {\n  id                       Int      @id @default(autoincrement())\n  routeId                  Int\n  departureLocation        String\n  arrivalLocation          String\n  departureTime            DateTime\n  arrivalTime              DateTime\n  estimatedDurationMinutes Int\n  status                   String\n  distanceKM               Decimal\n  route                    Route    @relation(\"RouteSchedule\", fields: [routeId], references: [id])\n  createdAt                DateTime @default(now())\n  updatedAt                DateTime @updatedAt\n}\n\nmodel Stop {\n  id         Int         @id @default(autoincrement())\n  name       String\n  latitude   Float?\n  longitude  Float?\n  routeStops RouteStop[]\n}\n\nmodel RouteStop {\n  id      Int  @id @default(autoincrement())\n  routeId Int\n  stopId  Int\n  order   Int?\n\n  route Route @relation(fields: [routeId], references: [id])\n  stop  Stop  @relation(fields: [stopId], references: [id])\n\n  // @@unique([routeId, stopId])\n}\n\nmodel Feedback {\n  id        Int      @id @default(autoincrement())\n  userId    Int\n  busId     Int\n  driverId  Int\n  rating    Int\n  comment   String\n  createdAt DateTime @default(now())\n\n  bus    Bus    @relation(fields: [busId], references: [id])\n  user   User   @relation(fields: [userId], references: [id])\n  driver Driver @relation(fields: [driverId], references: [id])\n}\n\nmodel Notification {\n  id        Int      @id @default(autoincrement())\n  userId    Int\n  driverId  Int\n  title     String\n  message   String\n  read      Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  user   User   @relation(fields: [userId], references: [id])\n  driver Driver @relation(fields: [driverId], references: [id])\n}\n",
-  "inlineSchemaHash": "07fe7d7d33c2f56d952965ad244b0fe2d0050d13ecadf37fd2f19f67139ec772",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"./output\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                 Int            @id @default(autoincrement())\n  name               String\n  email              String         @unique\n  number             String         @unique\n  password           String\n  disability         String?\n  url_foto_de_perfil String?\n  role               String         @default(\"USER\")\n  createdAt          DateTime       @default(now())\n  updatedAt          DateTime       @updatedAt\n  feedbacks          Feedback[]\n  notifications      Notification[]\n}\n\nmodel Driver {\n  id                 Int            @id @default(autoincrement())\n  name               String\n  email              String         @unique\n  phone              String         @unique\n  password           String\n  licenseNumber      String         @unique\n  url_foto_de_perfil String?\n  experienceTime     Int\n  effectiveDate      DateTime?\n  status             String         @default(\"AVAILABLE\") // AVAILABLE, ON_ROUTE OFFLINE\n  currentLatitude    Float?\n  currentLongitude   Float?\n  lastLogin          DateTime?\n  deviceToken        String?\n  isVerified         Boolean        @default(false)\n  rating             Float          @default(0)\n  assignedBus        Bus?           @relation(\"DriverBus\")\n  travels            Travel[]\n  feedbacks          Feedback[]\n  notifications      Notification[]\n  createdAt          DateTime       @default(now())\n  updatedAt          DateTime       @updatedAt\n}\n\nmodel Bus {\n  id          Int      @id @default(autoincrement())\n  matricula   String   @unique\n  nia         String   @unique\n  driverId    Int?     @unique\n  routeId     Int\n  status      String   @default(\"IN_TRANSIT\")\n  capacity    Int\n  currentLoad Int\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  driver Driver? @relation(\"DriverBus\", fields: [driverId], references: [id])\n  route  Route   @relation(fields: [routeId], references: [id])\n\n  travels   Travel[]\n  feedbacks Feedback[]\n}\n\nmodel Travel {\n  id            Int       @id @default(autoincrement())\n  routeId       Int\n  driverId      Int\n  busId         Int\n  profit        Int\n  arrivalTime   DateTime?\n  departureTime DateTime?\n\n  route     Route    @relation(fields: [routeId], references: [id])\n  driver    Driver   @relation(fields: [driverId], references: [id])\n  bus       Bus      @relation(fields: [busId], references: [id])\n  createdAt DateTime @default(now())\n}\n\nmodel Route {\n  id                   Int    @id @default(autoincrement())\n  name                 String\n  origin               String\n  originLatitude       Float?\n  originLongitude      Float?\n  destination          String\n  destinationLatitude  Float?\n  destinationLongitude Float?\n  status               String @default(\"active\")\n\n  buses      Bus[]\n  routeStops RouteStop[]\n  travels    Travel[]\n\n  schedules RouteSchedule[] @relation(\"RouteSchedule\")\n}\n\nmodel RouteSchedule {\n  id                       Int      @id @default(autoincrement())\n  routeId                  Int\n  departureLocation        String\n  arrivalLocation          String\n  departureTime            DateTime\n  arrivalTime              DateTime\n  estimatedDurationMinutes Int\n  status                   String\n  distanceKM               Decimal\n  route                    Route    @relation(\"RouteSchedule\", fields: [routeId], references: [id])\n  createdAt                DateTime @default(now())\n  updatedAt                DateTime @updatedAt\n}\n\nmodel Stop {\n  id         Int         @id @default(autoincrement())\n  name       String\n  latitude   Float?\n  longitude  Float?\n  routeStops RouteStop[]\n}\n\nmodel RouteStop {\n  id      Int  @id @default(autoincrement())\n  routeId Int\n  stopId  Int\n  order   Int?\n\n  route Route @relation(fields: [routeId], references: [id])\n  stop  Stop  @relation(fields: [stopId], references: [id])\n\n  // @@unique([routeId, stopId])\n}\n\nmodel Feedback {\n  id        Int      @id @default(autoincrement())\n  userId    Int\n  busId     Int\n  driverId  Int\n  rating    Int\n  comment   String\n  createdAt DateTime @default(now())\n\n  bus    Bus    @relation(fields: [busId], references: [id])\n  user   User   @relation(fields: [userId], references: [id])\n  driver Driver @relation(fields: [driverId], references: [id])\n}\n\nmodel Notification {\n  id        Int      @id @default(autoincrement())\n  userId    Int\n  driverId  Int\n  title     String\n  message   String\n  read      Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  user   User   @relation(fields: [userId], references: [id])\n  driver Driver @relation(fields: [driverId], references: [id])\n}\n",
+  "inlineSchemaHash": "b153ea70a17476c727d0cf358b5d9c424e9800258145abcb10215d1a4c8f16d8",
   "copyEngine": true
 }
 config.dirname = '/'
