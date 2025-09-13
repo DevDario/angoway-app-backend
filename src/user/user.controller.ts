@@ -23,17 +23,8 @@ export class UserController {
 
   @Post('')
   @HttpCode(HttpStatus.CREATED)
-  async signupUser(@Body() userData: Omit<User,"id">): Promise<ResponseBody> {
-    const response = await this.userService.createUser(userData);
-
-    if (response) {
-      return {
-        message: 'Usuário criado com Sucesso !',
-        code: HttpStatus.CREATED,
-      }
-    }
-
-    return response
+  async signupUser(@Body() userData: Omit<User, 'id'>): Promise<ResponseBody> {
+    return await this.userService.createUser(userData);
   }
 
   @HttpCode(HttpStatus.OK)
@@ -58,14 +49,14 @@ export class UserController {
     if (!user) {
       return {
         code: HttpStatus.NOT_FOUND,
-        message: `Não encontramos este usuário`
-      }
+        message: `Não encontramos este usuário`,
+      };
     }
 
     return {
-      code:HttpStatus.OK,
-      message: "Dados Atualizados."
-    }
+      code: HttpStatus.OK,
+      message: 'Dados Atualizados.',
+    };
   }
 
   @HttpCode(HttpStatus.OK)

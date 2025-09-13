@@ -1,8 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  HttpStatus,
-} from '@nestjs/common';
+import { Inject, Injectable, HttpStatus } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/database/prisma.service';
 import * as bcrypt from 'bcrypt';
@@ -14,7 +10,7 @@ export class UserService {
   private readonly prisma: PrismaService;
 
   //Criando o usuario
-  async createUser(data: Omit<User,"id">): Promise<ResponseBody | User> {
+  async createUser(data: Omit<User, 'id'>): Promise<ResponseBody> {
     const isEmailUsed = await this.user({ email: data.email });
     if (isEmailUsed) {
       return {
@@ -31,10 +27,29 @@ export class UserService {
       };
     }
 
+    if (isNumberUsed && isEmailUsed) {
+      return {
+        code: HttpStatus.UNAUTHORIZED,
+        message: 'Já encontramos uma conta com estes dados !',
+      };
+    }
+
     const hashPassword = await bcrypt.hash(data.password, 10);
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: { ...data, password: hashPassword },
     });
+
+    if (!user) {
+      return {
+        code: HttpStatus.CONFLICT,
+        message: 'Não foi possível criar a sua conta.',
+      };
+    }
+
+    return {
+      message: 'Usuário criado com Sucesso !',
+      code: HttpStatus.CREATED,
+    };
   }
 
   // Get User Profile Details
@@ -48,7 +63,7 @@ export class UserService {
         name: true,
         url_foto_de_perfil: true,
         number: true,
-        email:true
+        email: true,
       },
     });
 
