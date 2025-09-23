@@ -5,17 +5,13 @@ import {
   HttpCode,
   HttpStatus,
   Inject,
-  NotFoundException,
   Param,
   Patch,
   Post,
   Put,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { BusService } from './bus.service';
-// avoid importing Prisma types directly here to prevent type mismatch with generated client
-import type { /* Bus */ } from '@prisma/client';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { busDetails } from 'src/types/bus.details';
 import { updateBusDetails } from 'src/types/update-bus-details';
@@ -27,10 +23,16 @@ export class BusController {
   private readonly busService: BusService;
 
   @Post('')
-  async createBus(
-    @Body() busData: any,
-  ): Promise<ResponseBody> {
-    await this.busService.createBus(busData);
+  async createBus(@Body() busData: any): Promise<ResponseBody> {
+    const bus = await this.busService.createBus(busData);
+
+    if (!bus) {
+      return {
+        message: 'Houve um erro ao criar o autocarro. Tente novamente.',
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
+
     return {
       message: 'Autocarro criado com Sucesso !',
       code: HttpStatus.CREATED,

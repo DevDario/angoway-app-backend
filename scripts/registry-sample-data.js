@@ -42,244 +42,329 @@ var luandaStopsJson = require("../data/luanda-stops.json");
 var prisma = new client_1.PrismaClient();
 function generateRandomDate(monthOffset) {
     var today = new Date();
-    var randomDay = Math.floor(Math.random() * 28) + 1; // Para garantir que o dia seja válido (1-28)
+    var randomDay = Math.floor(Math.random() * 28) + 1;
     today.setMonth(today.getMonth() + monthOffset);
     today.setDate(randomDay);
     return today;
 }
-function createSampleData() {
+function generateNIA() {
     return __awaiter(this, void 0, void 0, function () {
-        var password, hashedPassword, users, drivers, orlando, laurentino, routes, routeSchedules, luandaStops, _i, luandaStops_1, luandaStop, name_1, stops, stopCout, validStopIds, validRouteIds, stopIds, buses, driversIDs, busesIDs, routesIDs, profits, i, monthOffset, createdAt, routeId, driverId, busId, profit, departureTime, arrivalTime, error_1;
+        var result;
+        var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
+                case 0: return [4 /*yield*/, prisma.$transaction(function (tx) { return __awaiter(_this, void 0, void 0, function () {
+                        var sequence;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, tx.niaSequence.upsert({
+                                        where: { id: 1 },
+                                        update: { lastNIA: { increment: 1 } },
+                                        create: { id: 1, lastNIA: 1 },
+                                    })];
+                                case 1:
+                                    sequence = _a.sent();
+                                    return [2 /*return*/, "BUS-".concat(String(sequence.lastNIA).padStart(4, '0'))];
+                            }
+                        });
+                    }); })];
+                case 1:
+                    result = _a.sent();
+                    return [2 /*return*/, result];
+            }
+        });
+    });
+}
+function createSampleData() {
+    return __awaiter(this, void 0, void 0, function () {
+        var password, hashedPassword, laurentino, augusto, routesPayload, routeNames, createdRoutes, routeMap_1, routeIds, _i, createdRoutes_1, rt, routeSchedulesPayload, schedulesData, luandaStops, _a, luandaStops_1, luandaStop, name_1, stops, validStopIds, routeStopPayload, _b, routeIds_1, routeId, i, randomStopId, bus1Nia, bus2Nia, createdBus1, createdBus2, driverRecords, driversIDs, busesIDs, profits, i, monthOffset, createdAt, routeId, driverId, busId, profit, departureTime, arrivalTime, travelCount, error_1;
+        var _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
                 case 0:
-                    _a.trys.push([0, 21, 22, 24]);
+                    _d.trys.push([0, 25, 26, 28]);
                     password = '108449123Dss';
                     return [4 /*yield*/, bcrypt.hash(password, 10)];
                 case 1:
-                    hashedPassword = _a.sent();
+                    hashedPassword = _d.sent();
                     return [4 /*yield*/, prisma.user.createMany({
                             data: [
-                                { name: 'Dario',
+                                {
+                                    name: 'Dario',
                                     email: 'dario@gmail.com',
                                     number: '945193073',
                                     password: hashedPassword,
-                                    role: 'USER' },
-                                { name: 'Pedro',
+                                    role: 'USER',
+                                },
+                                {
+                                    name: 'Pedro',
                                     email: 'pedro@gmail.com',
                                     number: '934945740',
                                     password: hashedPassword,
-                                    role: 'USER' },
-                                { name: 'Rebeca',
-                                    email: 'rebeca@gmail.com',
-                                    number: '912345678',
-                                    password: hashedPassword,
-                                    role: 'USER' },
-                                { name: 'Fernando',
+                                    role: 'USER',
+                                },
+                                {
+                                    name: 'Fernando',
                                     email: 'fernando@gmail.com',
                                     number: '923456789',
                                     password: hashedPassword,
-                                    role: 'ADMIN' },
-                            ]
+                                    role: 'ADMIN',
+                                },
+                            ],
+                            skipDuplicates: true,
                         })];
                 case 2:
-                    users = _a.sent();
+                    _d.sent();
                     return [4 /*yield*/, prisma.driver.createMany({
                             data: [
                                 {
-                                    name: 'Orlando',
-                                    email: 'orlando@gmail.com',
-                                    phone: '911223344',
-                                    password: hashedPassword,
-                                    licenseNumber: 'cb9a8f',
-                                    experienceTime: 1
-                                },
-                                {
                                     name: 'Laurentino',
                                     email: 'laurentino@gmail.com',
-                                    phone: '922334455',
+                                    phone: '911223344',
                                     password: hashedPassword,
-                                    licenseNumber: 'a922d0',
-                                    experienceTime: 3
+                                    licenseNumber: 'LD-654321',
+                                    experienceTime: 3,
+                                },
+                                {
+                                    name: 'Augusto',
+                                    email: 'augusto@gmail.com',
+                                    phone: '944332211',
+                                    password: hashedPassword,
+                                    licenseNumber: 'LD-204552',
+                                    experienceTime: 5,
                                 },
                             ],
+                            skipDuplicates: true,
                         })];
                 case 3:
-                    drivers = _a.sent();
-                    console.log('Users created:', users.count);
-                    console.log('Drivers created', drivers.count);
-                    return [4 /*yield*/, prisma.driver.findUnique({ where: { email: 'orlando@gmail.com' } })];
+                    _d.sent();
+                    return [4 /*yield*/, prisma.driver.findUnique({
+                            where: { email: 'laurentino@gmail.com' },
+                        })];
                 case 4:
-                    orlando = _a.sent();
-                    return [4 /*yield*/, prisma.driver.findUnique({ where: { email: 'laurentino@gmail.com' } })];
+                    laurentino = _d.sent();
+                    return [4 /*yield*/, prisma.driver.findUnique({
+                            where: { email: 'augusto@gmail.com' },
+                        })];
                 case 5:
-                    laurentino = _a.sent();
-                    if (!orlando || !laurentino) {
+                    augusto = _d.sent();
+                    if (!laurentino || !augusto)
                         throw new Error('Failed to find driver users.');
-                    }
+                    routesPayload = [
+                        {
+                            name: 'Benfica - Patriota',
+                            origin: 'Benfica',
+                            destination: 'Patriota',
+                            status: 'active',
+                            originLatitude: 8.839,
+                            originLongitude: 13.2894,
+                            destinationLatitude: 5.839,
+                            destinationLongitude: 15.2345,
+                        },
+                        {
+                            name: 'Luanda Sul - Cacuaco',
+                            origin: 'Luanda Sul',
+                            destination: 'Cacuaco',
+                            status: 'active',
+                            originLatitude: 12.839,
+                            originLongitude: 4.2894,
+                            destinationLatitude: 7.839,
+                            destinationLongitude: 5.2345,
+                        },
+                        {
+                            name: 'Luanda - Talatona',
+                            origin: 'Luanda Central',
+                            destination: 'Talatona',
+                            status: 'active',
+                            originLatitude: 8.839,
+                            originLongitude: 13.2894,
+                            destinationLatitude: 5.839,
+                            destinationLongitude: 15.2345,
+                        },
+                        {
+                            name: 'Luanda - Kilamba',
+                            origin: 'Luanda Central',
+                            destination: 'Kilamba',
+                            status: 'active',
+                            originLatitude: 8.839,
+                            originLongitude: 13.2894,
+                            destinationLatitude: 5.839,
+                            destinationLongitude: 15.2345,
+                        },
+                        {
+                            name: 'Luanda Central - Benfica',
+                            origin: 'Luanda Central',
+                            destination: 'Benfica',
+                            status: 'active',
+                            originLatitude: 8.839,
+                            originLongitude: 13.2894,
+                            destinationLatitude: 5.839,
+                            destinationLongitude: 15.2345,
+                        },
+                    ];
+                    routeNames = routesPayload.map(function (r) { return r.name; });
                     return [4 /*yield*/, prisma.route.createMany({
-                            data: [
-                                { name: 'Luanda Central to Viana',
-                                    origin: 'Luanda Central',
-                                    destination: 'Viana',
-                                    status: 'active'
-                                },
-                                { name: 'Luanda Sul to Cacuaco',
-                                    origin: 'Luanda Sul',
-                                    destination: 'Cacuaco',
-                                    status: 'active'
-                                },
-                                { name: 'Luanda to Talatona',
-                                    origin: 'Luanda Central',
-                                    destination: 'Talatona',
-                                    status: 'active'
-                                },
-                                { name: 'Luanda to Kilamba',
-                                    origin: 'Luanda Central',
-                                    destination: 'Kilamba',
-                                    status: 'active'
-                                },
-                                { name: 'Luanda to Benfica',
-                                    origin: 'Luanda Central',
-                                    destination: 'Benfica',
-                                    status: 'active'
-                                },
-                            ],
+                            data: routesPayload,
+                            skipDuplicates: true,
                         })];
                 case 6:
-                    routes = _a.sent();
-                    return [4 /*yield*/, prisma.routeSchedule.createMany({
-                            data: [
-                                {
-                                    routeId: 1,
-                                    departureLocation: 'Luanda Central',
-                                    arrivalLocation: 'Cacuaco Park',
-                                    departureTime: '2025-12-05T14:30:00Z',
-                                    arrivalTime: '2025-12-05T15:25:00Z',
-                                    estimatedDurationMinutes: 55,
-                                    status: 'active',
-                                    distanceKM: 56.0,
-                                },
-                                {
-                                    routeId: 2,
-                                    departureLocation: 'Luanda Sul',
-                                    arrivalLocation: 'Cacuaco',
-                                    departureTime: '2025-12-05T14:30:00Z',
-                                    arrivalTime: '2025-12-05T15:25:00Z',
-                                    estimatedDurationMinutes: 55,
-                                    status: 'active',
-                                    distanceKM: 56.0,
-                                },
-                                {
-                                    routeId: 3,
-                                    departureLocation: 'Luanda Central',
-                                    arrivalLocation: 'Talatona',
-                                    departureTime: '2025-12-05T07:30:00Z',
-                                    arrivalTime: '2025-12-05T07:55:00Z',
-                                    estimatedDurationMinutes: 25,
-                                    status: 'active',
-                                    distanceKM: 54.0,
-                                },
-                                {
-                                    routeId: 4,
-                                    departureLocation: 'Luanda Central',
-                                    arrivalLocation: 'Kilamba',
-                                    departureTime: '2025-12-05T14:30:00Z',
-                                    arrivalTime: '2025-12-05T15:25:00Z',
-                                    estimatedDurationMinutes: 55,
-                                    status: 'active',
-                                    distanceKM: 56.0,
-                                },
-                            ],
+                    _d.sent();
+                    return [4 /*yield*/, prisma.route.findMany({
+                            where: { name: { in: routeNames } },
                         })];
                 case 7:
-                    routeSchedules = _a.sent();
-                    console.log("Schedules Created", routeSchedules.count);
-                    console.log('Routes created:', routes.count);
-                    luandaStops = luandaStopsJson.elements;
-                    _i = 0, luandaStops_1 = luandaStops;
-                    _a.label = 8;
+                    createdRoutes = _d.sent();
+                    routeMap_1 = new Map();
+                    routeIds = [];
+                    for (_i = 0, createdRoutes_1 = createdRoutes; _i < createdRoutes_1.length; _i++) {
+                        rt = createdRoutes_1[_i];
+                        routeMap_1.set(rt.name, rt.id);
+                        routeIds.push(rt.id);
+                    }
+                    routeSchedulesPayload = [
+                        {
+                            routeName: 'Benfica - Patriota',
+                            departureLocation: 'Benfica',
+                            arrivalLocation: 'Patriota',
+                            departureTime: new Date('2025-06-23T07:00:00Z'),
+                            arrivalTime: new Date('2025-06-23T07:30:00Z'),
+                            estimatedDurationMinutes: 30,
+                            status: 'active',
+                            distanceKM: new client_1.Prisma.Decimal(12.0),
+                        },
+                        {
+                            routeName: 'Luanda Sul - Cacuaco',
+                            departureLocation: 'Luanda Sul',
+                            arrivalLocation: 'Cacuaco',
+                            departureTime: new Date('2025-06-23T14:30:00Z'),
+                            arrivalTime: new Date('2025-06-23T15:25:00Z'),
+                            estimatedDurationMinutes: 55,
+                            status: 'active',
+                            distanceKM: new client_1.Prisma.Decimal(56.0),
+                        },
+                        {
+                            routeName: 'Luanda - Talatona',
+                            departureLocation: 'Luanda Central',
+                            arrivalLocation: 'Talatona',
+                            departureTime: new Date('2025-06-23T07:30:00Z'),
+                            arrivalTime: new Date('2025-06-23T07:55:00Z'),
+                            estimatedDurationMinutes: 25,
+                            status: 'active',
+                            distanceKM: new client_1.Prisma.Decimal(54.0),
+                        },
+                        {
+                            routeName: 'Luanda - Kilamba',
+                            departureLocation: 'Luanda Central',
+                            arrivalLocation: 'Kilamba',
+                            departureTime: new Date('2025-06-23T14:30:00Z'),
+                            arrivalTime: new Date('2025-06-23T15:25:00Z'),
+                            estimatedDurationMinutes: 55,
+                            status: 'active',
+                            distanceKM: new client_1.Prisma.Decimal(56.0),
+                        },
+                    ];
+                    schedulesData = routeSchedulesPayload.map(function (s) {
+                        var routeId = routeMap_1.get(s.routeName);
+                        if (!routeId)
+                            throw new Error("Route not found for schedule: ".concat(s.routeName));
+                        return {
+                            routeId: routeId,
+                            departureLocation: s.departureLocation,
+                            arrivalLocation: s.arrivalLocation,
+                            departureTime: s.departureTime,
+                            arrivalTime: s.arrivalTime,
+                            estimatedDurationMinutes: s.estimatedDurationMinutes,
+                            status: s.status,
+                            distanceKM: s.distanceKM,
+                        };
+                    });
+                    return [4 /*yield*/, prisma.routeSchedule.createMany({
+                            data: schedulesData,
+                            skipDuplicates: true,
+                        })];
                 case 8:
-                    if (!(_i < luandaStops_1.length)) return [3 /*break*/, 11];
-                    luandaStop = luandaStops_1[_i];
-                    name_1 = luandaStop.tags.name || 'N/A';
+                    _d.sent();
+                    luandaStops = luandaStopsJson.elements;
+                    _a = 0, luandaStops_1 = luandaStops;
+                    _d.label = 9;
+                case 9:
+                    if (!(_a < luandaStops_1.length)) return [3 /*break*/, 12];
+                    luandaStop = luandaStops_1[_a];
+                    name_1 = (luandaStop.tags && luandaStop.tags.name) || 'N/A';
                     return [4 /*yield*/, prisma.stop.create({
+                            data: { name: name_1, latitude: luandaStop.lat, longitude: luandaStop.lon },
+                        })];
+                case 10:
+                    _d.sent();
+                    _d.label = 11;
+                case 11:
+                    _a++;
+                    return [3 /*break*/, 9];
+                case 12: return [4 /*yield*/, prisma.stop.findMany({})];
+                case 13:
+                    stops = _d.sent();
+                    validStopIds = stops.map(function (s) { return s.id; });
+                    routeStopPayload = [];
+                    for (_b = 0, routeIds_1 = routeIds; _b < routeIds_1.length; _b++) {
+                        routeId = routeIds_1[_b];
+                        for (i = 0; i < 3; i++) {
+                            randomStopId = validStopIds[Math.floor(Math.random() * validStopIds.length)];
+                            routeStopPayload.push({ routeId: routeId, stopId: randomStopId });
+                        }
+                    }
+                    return [4 /*yield*/, prisma.routeStop.createMany({
+                            data: routeStopPayload,
+                            skipDuplicates: true,
+                        })];
+                case 14:
+                    _d.sent();
+                    return [4 /*yield*/, generateNIA()];
+                case 15:
+                    bus1Nia = _d.sent();
+                    return [4 /*yield*/, generateNIA()];
+                case 16:
+                    bus2Nia = _d.sent();
+                    return [4 /*yield*/, prisma.bus.create({
                             data: {
-                                name: name_1,
-                                latitude: luandaStop.lat,
-                                longitude: luandaStop.lon
+                                nia: bus1Nia,
+                                matricula: 'LD-24-24-DF',
+                                driverId: augusto.id,
+                                routeId: routeIds[0],
+                                status: 'OFF_SERVICE',
+                                capacity: 50,
+                                currentLoad: 0,
                             },
                         })];
-                case 9:
-                    _a.sent();
-                    _a.label = 10;
-                case 10:
-                    _i++;
-                    return [3 /*break*/, 8];
-                case 11: return [4 /*yield*/, prisma.stop.findMany({})];
-                case 12:
-                    stops = _a.sent();
-                    stopCout = stops.length;
-                    return [4 /*yield*/, prisma.stop.findMany({ select: { id: true } })];
-                case 13:
-                    validStopIds = _a.sent();
-                    return [4 /*yield*/, prisma.route.findMany({ select: { id: true } })];
-                case 14:
-                    validRouteIds = _a.sent();
-                    stopIds = validStopIds.map(function (stop) { return stop.id; });
-                    return [4 /*yield*/, prisma.routeStop.createMany({
-                            data: [
-                                { routeId: 1, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 1, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 2, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 2, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 2, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 3, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 4, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 4, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 5, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                                { routeId: 1, stopId: stopIds[Math.floor(Math.random() * stopIds.length)] },
-                            ]
+                case 17:
+                    createdBus1 = _d.sent();
+                    return [4 /*yield*/, prisma.bus.create({
+                            data: {
+                                nia: bus2Nia,
+                                matricula: 'LD-12-45-AB',
+                                driverId: laurentino.id,
+                                routeId: (_c = routeIds[1]) !== null && _c !== void 0 ? _c : routeIds[0],
+                                status: 'OFF_SERVICE',
+                                capacity: 40,
+                                currentLoad: 0,
+                            },
                         })];
-                case 15:
-                    _a.sent();
-                    console.log('Stops created:', stops.length);
-                    return [4 /*yield*/, prisma.bus.createMany({
-                            data: [
-                                {
-                                    nia: 'BUS001',
-                                    matricula: 'LDA-123-45',
-                                    driverId: orlando.id,
-                                    routeId: 1,
-                                    status: 'IN_TRANSIT',
-                                    capacity: 50,
-                                    currentLoad: 30,
-                                },
-                                {
-                                    nia: 'BUS002',
-                                    matricula: 'LDA-678-90',
-                                    driverId: laurentino.id,
-                                    routeId: 2,
-                                    status: 'IN_TRANSIT',
-                                    capacity: 40,
-                                    currentLoad: 25,
-                                },
-                            ],
+                case 18:
+                    createdBus2 = _d.sent();
+                    return [4 /*yield*/, prisma.driver.findMany({
+                            select: { id: true },
                         })];
-                case 16:
-                    buses = _a.sent();
-                    console.log('Buses created:', buses.count);
-                    driversIDs = [1, 2];
-                    busesIDs = [1, 2];
-                    routesIDs = [1, 2, 3, 4, 5];
+                case 19:
+                    driverRecords = _d.sent();
+                    driversIDs = driverRecords.map(function (d) { return d.id; });
+                    busesIDs = [createdBus1.id, createdBus2.id];
                     profits = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
                     i = 0;
-                    _a.label = 17;
-                case 17:
-                    if (!(i < 20)) return [3 /*break*/, 20];
+                    _d.label = 20;
+                case 20:
+                    if (!(i < 20)) return [3 /*break*/, 23];
                     monthOffset = Math.floor(i / 5);
                     createdAt = generateRandomDate(monthOffset);
-                    routeId = routesIDs[Math.floor(Math.random() * routesIDs.length)];
+                    routeId = routeIds[Math.floor(Math.random() * routeIds.length)];
                     driverId = driversIDs[Math.floor(Math.random() * driversIDs.length)];
                     busId = busesIDs[Math.floor(Math.random() * busesIDs.length)];
                     profit = profits[Math.floor(Math.random() * profits.length)];
@@ -295,28 +380,30 @@ function createSampleData() {
                                 profit: profit,
                                 departureTime: departureTime,
                                 arrivalTime: arrivalTime,
-                                createdAt: createdAt
+                                createdAt: createdAt,
                             },
                         })];
-                case 18:
-                    _a.sent();
-                    _a.label = 19;
-                case 19:
-                    i++;
-                    return [3 /*break*/, 17];
-                case 20:
-                    console.log('Travel created:', 20);
-                    console.log('✅ Sample data created successfully.');
-                    return [3 /*break*/, 24];
                 case 21:
-                    error_1 = _a.sent();
+                    _d.sent();
+                    _d.label = 22;
+                case 22:
+                    i++;
+                    return [3 /*break*/, 20];
+                case 23: return [4 /*yield*/, prisma.travel.count()];
+                case 24:
+                    travelCount = _d.sent();
+                    console.log('Travel created:', travelCount);
+                    console.log('✅ Sample data created successfully.');
+                    return [3 /*break*/, 28];
+                case 25:
+                    error_1 = _d.sent();
                     console.error('❌ Error creating sample data:', error_1);
                     throw error_1;
-                case 22: return [4 /*yield*/, prisma.$disconnect()];
-                case 23:
-                    _a.sent();
+                case 26: return [4 /*yield*/, prisma.$disconnect()];
+                case 27:
+                    _d.sent();
                     return [7 /*endfinally*/];
-                case 24: return [2 /*return*/];
+                case 28: return [2 /*return*/];
             }
         });
     });

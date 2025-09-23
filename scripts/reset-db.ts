@@ -4,6 +4,8 @@ const prisma = new PrismaClient();
 
 async function resetDatabase() {
   try {
+    console.log('Starting database reset...');
+
     await prisma.notification.deleteMany({});
     await prisma.feedback.deleteMany({});
     await prisma.travel.deleteMany({});
@@ -13,10 +15,15 @@ async function resetDatabase() {
     await prisma.bus.deleteMany({});
     await prisma.driver.deleteMany({});
     await prisma.route.deleteMany({});
-    await prisma.user.deleteMany({}); 
-    await prisma.$executeRaw`DELETE FROM sqlite_sequence;`;
+    await prisma.user.deleteMany({});
+    await prisma.niaSequence.deleteMany({});
+
+    await prisma.niaSequence.create({
+      data: { id: 1, lastNIA: 0 },
+    });
 
     console.log('Database reset successfully.');
+    console.log('NIA sequence initialized - next bus will be BUS-0001');
   } catch (error) {
     console.error('Error resetting database:', error);
     throw error;

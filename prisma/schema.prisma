@@ -66,6 +66,13 @@ model Bus {
   feedbacks   Feedback[]
 }
 
+model NiaSequence {
+  id Int @id @default(1)
+  lastNIA Int @default(0)
+
+  @@map("nia_sequences")
+}
+
 model Travel{
     id             Int        @id @default(autoincrement())
     routeId        Int        

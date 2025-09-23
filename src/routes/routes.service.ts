@@ -125,6 +125,14 @@ export class RoutesService {
     return upcomingRoutes;
   }
 
+  // create simple route
+  async createRoute(data: Prisma.RouteCreateInput) {
+    return await this.prisma.route.create({
+      data: data
+    })
+  }
+
+  // create route with stops
   async createRouteWithStops(data: {
     name: string;
     origin: string;
