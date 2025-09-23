@@ -45,6 +45,24 @@ export class RoutesController {
     };
   }
 
+  @Post('/create')
+  @HttpCode(HttpStatus.CREATED)
+  async createBasicRoute(@Body() dto: Prisma.RouteCreateInput):Promise<ResponseBody> {
+    const route = await this.routesService.createRoute(dto)
+
+    if (!route) {
+      return {
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+        message:"Houve um erro ao criar esta rota. Tente novamente."
+      }
+    }
+
+    return {
+      code: HttpStatus.CREATED,
+      message: 'Rota Criada com Sucesso !',
+    };
+  }
+
   @Put('assign-schedule/:scheduleId')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)

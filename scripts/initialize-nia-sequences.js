@@ -38,69 +38,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var client_1 = require("@prisma/client");
 var prisma = new client_1.PrismaClient();
-function resetDatabase() {
+function initializeNiaSequence() {
     return __awaiter(this, void 0, void 0, function () {
-        var error_1;
+        var lastBus, lastNumber, match;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    _a.trys.push([0, 13, 14, 16]);
-                    console.log('Starting database reset...');
-                    return [4 /*yield*/, prisma.notification.deleteMany({})];
+                case 0: return [4 /*yield*/, prisma.bus.findFirst({
+                        orderBy: { nia: 'desc' },
+                        select: { nia: true },
+                    })];
                 case 1:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.feedback.deleteMany({})];
+                    lastBus = _a.sent();
+                    lastNumber = 0;
+                    if (lastBus === null || lastBus === void 0 ? void 0 : lastBus.nia) {
+                        match = lastBus.nia.match(/(\d+)$/);
+                        if (match)
+                            lastNumber = parseInt(match[1], 10);
+                    }
+                    return [4 /*yield*/, prisma.niaSequence.upsert({
+                            where: { id: 1 },
+                            update: { lastNIA: lastNumber },
+                            create: { id: 1, lastNIA: lastNumber },
+                        })];
                 case 2:
                     _a.sent();
-                    return [4 /*yield*/, prisma.travel.deleteMany({})];
-                case 3:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.routeStop.deleteMany({})];
-                case 4:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.stop.deleteMany({})];
-                case 5:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.routeSchedule.deleteMany({})];
-                case 6:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.bus.deleteMany({})];
-                case 7:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.driver.deleteMany({})];
-                case 8:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.route.deleteMany({})];
-                case 9:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.user.deleteMany({})];
-                case 10:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.niaSequence.deleteMany({})];
-                case 11:
-                    _a.sent();
-                    return [4 /*yield*/, prisma.niaSequence.create({
-                            data: { id: 1, lastNIA: 0 },
-                        })];
-                case 12:
-                    _a.sent();
-                    console.log('Database reset successfully.');
-                    console.log('NIA sequence initialized - next bus will be BUS-0001');
-                    return [3 /*break*/, 16];
-                case 13:
-                    error_1 = _a.sent();
-                    console.error('Error resetting database:', error_1);
-                    throw error_1;
-                case 14: return [4 /*yield*/, prisma.$disconnect()];
-                case 15:
-                    _a.sent();
-                    return [7 /*endfinally*/];
-                case 16: return [2 /*return*/];
+                    console.log("NIA sequence initialized with lastNIA: ".concat(lastNumber));
+                    return [2 /*return*/];
             }
         });
     });
 }
-resetDatabase().catch(function (error) {
-    console.error(error);
-    process.exit(1);
-});
+initializeNiaSequence()
+    .catch(console.error)
+    .finally(function () { return prisma.$disconnect(); });

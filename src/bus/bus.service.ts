@@ -1,8 +1,6 @@
 import {
   Injectable,
   Inject,
-  NotFoundException,
-  BadRequestException,
   HttpStatus,
 } from '@nestjs/common';
 import { Prisma, Bus } from '@prisma/client';
@@ -26,22 +24,22 @@ export class BusService {
   ) {}
 
   async generateNIA(): Promise<string> {
-    const lastBus = await this.prisma.bus.findFirst({
-      orderBy: { updatedAt: 'desc' },
-      select: { nia: true },
+    const result = await this.prisma.$transaction(async (tx) => {
+      const sequence = await tx.niaSequence.upsert({
+        where: { id: 1 },
+        update: { lastNIA: { increment: 1 } },
+        create: { id: 1, lastNIA: 1 },
+      });
+
+      return `BUS-${String(sequence.lastNIA).padStart(4, '0')}`;
     });
-    let number = 1;
-    if (lastBus?.nia) {
-  // aceita formatos como "BUS001", "BUS-001", "BUS-1" etc.
-  const match = lastBus.nia.match(/(\d+)$/);
-  if (match) number = parseInt(match[1], 10) + 1;
-    }
-    return `BUS-${String(number).padStart(4, '0')}`;
+
+    return result;
   }
-  //Criando o Bus
+
   async createBus(data: Prisma.BusCreateInput) {
     const nia = await this.generateNIA();
-
+    console.log("new NIA" + nia)
     return this.prisma.bus.create({
       data: {
         ...data,
@@ -185,7 +183,7 @@ export class BusService {
                     id: true,
                     name: true,
                     latitude: true,
-                    longitude: true
+                    longitude: true,
                   },
                 },
               },
@@ -259,7 +257,6 @@ export class BusService {
       ) {
         await this.travelService.close(id);
         try {
-          
           await this.driverService.updateDriver({
             where: { id: bus.driverId || undefined },
             data: {
@@ -332,10 +329,7 @@ export class BusService {
     });
   }
 
-  async changeStatus(
-    driverId: number,
-    data: any,
-  ): Promise<ResponseBody | Bus> {
+  async changeStatus(driverId: number, data: any): Promise<ResponseBody | Bus> {
     const bus = await this.prisma.bus.findFirst({ where: { driverId } });
 
     if (!bus) {
